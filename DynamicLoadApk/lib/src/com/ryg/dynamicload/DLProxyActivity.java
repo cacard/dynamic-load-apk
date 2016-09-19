@@ -35,9 +35,23 @@ import com.ryg.dynamicload.internal.DLAttachable;
 import com.ryg.dynamicload.internal.DLPluginManager;
 import com.ryg.dynamicload.internal.DLProxyImpl;
 
+/**
+ * by cunqingli:
+ * 宿主调起插件的Activity时，均指向这个代理类。
+ * 它是宿主的一个特殊Activity，有正常的生命周期。
+ * 对于插件来说，它为一个壳，一个模拟插件Activity生命周期的代理。
+ *
+ * 这个代理类知道它要代理运行的插件Activity类型路径名等信息。
+ * 那就按照普通Activity的生命周期去分析吧。
+ * 创建(ctor被调起)肯定是系统的事儿；
+ * 那入口就是onCreate()了；
+ *
+ */
 public class DLProxyActivity extends Activity implements DLAttachable {
 
     protected DLPlugin mRemoteActivity;
+
+    // 干嘛要整出个impl呢？
     private DLProxyImpl impl = new DLProxyImpl(this);
 
     @Override
@@ -46,6 +60,12 @@ public class DLProxyActivity extends Activity implements DLAttachable {
         impl.onCreate(getIntent());
     }
 
+    /**
+     * attach在前还是onCrate()？
+     * 
+     * @param remoteActivity
+     * @param pluginManager DLPluginManager instance, manager the plugins
+     */
     @Override
     public void attach(DLPlugin remoteActivity, DLPluginManager pluginManager) {
         mRemoteActivity = remoteActivity;
