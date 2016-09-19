@@ -66,11 +66,13 @@ public class MainActivity extends Activity implements OnItemClickListener {
             return;
         }
 
+        // 每个插件取出一个Activity/Service，抽取信息放入到当前ListView中，供宿主打开测试。
         for (File plugin : plugins) {
             PluginItem item = new PluginItem();
             item.pluginPath = plugin.getAbsolutePath();
             item.packageInfo = DLUtils.getPackageInfo(this, item.pluginPath);
             if (item.packageInfo.activities != null && item.packageInfo.activities.length > 0) {
+                // 设置插件默认的Activity，直接从[0]取得
                 item.launcherActivityName = item.packageInfo.activities[0].name;
             }
             if (item.packageInfo.services != null && item.packageInfo.services.length > 0) {

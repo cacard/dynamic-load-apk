@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/DynamicLoadApk/sample/depend_on_interface/doi-common/doi-common.iml" filepath="$PROJECT_DIR$/DynamicLoadApk/sample/depend_on_interface/doi-common/doi-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DynamicLoadApk/sample/depend_on_interface/doi-host/doi-host.iml" filepath="$PROJECT_DIR$/DynamicLoadApk/sample/depend_on_interface/doi-host/doi-host.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DynamicLoadApk/sample/depend_on_interface/doi-plugin/doi-plugin.iml" filepath="$PROJECT_DIR$/DynamicLoadApk/sample/depend_on_interface/doi-plugin/doi-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DynamicLoadApk/lib/lib.iml" filepath="$PROJECT_DIR$/DynamicLoadApk/lib/lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DynamicLoadApk/sample/main/main-host/main-host.iml" filepath="$PROJECT_DIR$/DynamicLoadApk/sample/main/main-host/main-host.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DynamicLoadApk/sample/main/main-plugin-a/main-plugin-a.iml" filepath="$PROJECT_DIR$/DynamicLoadApk/sample/main/main-plugin-a/main-plugin-a.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DynamicLoadApk/sample/main/main-plugin-b/main-plugin-b.iml" filepath="$PROJECT_DIR$/DynamicLoadApk/sample/main/main-plugin-b/main-plugin-b.iml" />
+    </modules>
+  </component>
+</project>

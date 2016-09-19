@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="external-jars">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/DynamicLoadApk/sample/main/main-plugin-a/external-jars/android-support-v4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/DynamicLoadApk/sample/main/main-plugin-a/external-jars/dl-lib.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

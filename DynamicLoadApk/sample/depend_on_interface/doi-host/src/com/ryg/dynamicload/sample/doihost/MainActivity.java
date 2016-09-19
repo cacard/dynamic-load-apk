@@ -160,6 +160,10 @@ public class MainActivity extends Activity implements OnItemClickListener {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         PluginItem item = mPluginItems.get(position);
+
+
+        // 重要入口
+        // 加载完毕插件Apk后，用户点击开始调起插件的Activity
         DLPluginManager pluginManager = DLPluginManager.getInstance(this);
         pluginManager.startPluginActivity(this, new DLIntent(item.packageInfo.packageName));
         

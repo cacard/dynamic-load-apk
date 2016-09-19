@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="android-support-v45">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/DynamicLoadApk/sample/main/main-plugin-b/libs/android-support-v4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -102,6 +102,12 @@ public class DLPluginManager {
     }
 
     /**
+     * by cunqingli:
+     * 重要入口
+     *
+     * 宿主在MainActivity或者Application创建时，适时加载Apk。
+     * 更好的方法是采用独立进程。
+     *
      * Load a apk. Before start a plugin Activity, we should do this first.<br/>
      * NOTE : will only be called by host apk.
      * 
@@ -121,6 +127,7 @@ public class DLPluginManager {
      * @return
      */
     public DLPluginPackage loadApk(final String dexPath, boolean hasSoLib) {
+        // 如果宿主执行了加载插件Apk，更改mFrom，表示从宿主调起插件的Activity
         mFrom = DLConstants.FROM_EXTERNAL;
 
         PackageInfo packageInfo = mContext.getPackageManager().getPackageArchiveInfo(dexPath,
@@ -138,6 +145,8 @@ public class DLPluginManager {
     }
 
     /**
+     * 创建DexClassLoader/资源相关（Resources）对象。
+     *
      * prepare plugin runtime env, has DexClassLoader, Resources, and so on.
      * 
      * @param packageInfo
@@ -146,16 +155,19 @@ public class DLPluginManager {
      */
     private DLPluginPackage preparePluginEnv(PackageInfo packageInfo, String dexPath) {
 
+        // 先看看缓存里面有没有
         DLPluginPackage pluginPackage = mPackagesHolder.get(packageInfo.packageName);
         if (pluginPackage != null) {
             return pluginPackage;
         }
+
         DexClassLoader dexClassLoader = createDexClassLoader(dexPath);
         AssetManager assetManager = createAssetManager(dexPath);
         Resources resources = createResources(assetManager);
         // create pluginPackage
         pluginPackage = new DLPluginPackage(dexClassLoader, resources, packageInfo);
         mPackagesHolder.put(packageInfo.packageName, pluginPackage);
+
         return pluginPackage;
     }
 
@@ -206,10 +218,13 @@ public class DLPluginManager {
         // copy is done, send a signal to the main thread.
         // new Thread(new CopySoRunnable(dexPath)).start();
 
+        // 拷贝so容易阻塞UI线程，这里面采用了线程池
         SoLibManager.getSoLoader().copyPluginSoLib(mContext, dexPath, mNativeLibDir);
     }
 
     /**
+     * 宿主加载插件Apk完毕后，用户点击调起插件的Activity。
+     *
      * {@link #startPluginActivityForResult(Activity, DLIntent, int)}
      */
     public int startPluginActivity(Context context, DLIntent dlIntent) {
@@ -226,6 +241,8 @@ public class DLPluginManager {
      */
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public int startPluginActivityForResult(Context context, DLIntent dlIntent, int requestCode) {
+
+        // ? 具体什么时候会走这个？插件独立安装时？
         if (mFrom == DLConstants.FROM_INTERNAL) {
             dlIntent.setClassName(context, dlIntent.getPluginClass());
             performStartActivityForResult(context, dlIntent, requestCode);
@@ -248,6 +265,7 @@ public class DLPluginManager {
             return START_RESULT_NO_CLASS;
         }
 
+        // 获取代理类型（Class）
         // get the proxy activity class, the proxy activity will launch the
         // plugin activity.
         Class<? extends Activity> activityClass = getProxyActivityClass(clazz);
@@ -258,7 +276,12 @@ public class DLPluginManager {
         // put extra data
         dlIntent.putExtra(DLConstants.EXTRA_CLASS, className);
         dlIntent.putExtra(DLConstants.EXTRA_PACKAGE, packageName);
+
+        // 这个比较关键，最终跳转到的是代理类！即，下面的startActivity跳转到了DLProxyActivity类里面，
+        // 由代理类做中转。那DLProxyImpl其实是DLProxyActivity的真正实现。可以把DLProxyActivity当作一个Wrapper，感觉没必要啊！
+        // 接下来就去看DLProxyActivity和DLProxyImpl吧。
         dlIntent.setClass(mContext, activityClass);
+
         performStartActivityForResult(context, dlIntent, requestCode);
         return START_RESULT_SUCCESS;
     }
@@ -440,6 +463,14 @@ public class DLPluginManager {
         return proxyServiceClass;
     }
 
+    /**
+     * 注意这个context，是宿主的某个Activity。
+     * 到这里怎么直接调用context.startActivity了？不用代理了？
+     *
+     * @param context
+     * @param dlIntent
+     * @param requestCode
+     */
     private void performStartActivityForResult(Context context, DLIntent dlIntent, int requestCode) {
         Log.d(TAG, "launch " + dlIntent.getPluginClass());
         if (context instanceof Activity) {
