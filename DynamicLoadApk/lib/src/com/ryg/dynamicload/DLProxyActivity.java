@@ -61,8 +61,12 @@ public class DLProxyActivity extends Activity implements DLAttachable {
     }
 
     /**
-     * attach在前还是onCrate()？
-     * 
+     * ？
+     *
+     * 这个是自定义方法。lanuch一个插件activity时调用。
+     *
+     * 待会儿看。
+     *
      * @param remoteActivity
      * @param pluginManager DLPluginManager instance, manager the plugins
      */

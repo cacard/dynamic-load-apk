@@ -161,6 +161,7 @@ public class DLPluginManager {
             return pluginPackage;
         }
 
+        // 创建DexClassLoader，这是个核心点
         DexClassLoader dexClassLoader = createDexClassLoader(dexPath);
         AssetManager assetManager = createAssetManager(dexPath);
         Resources resources = createResources(assetManager);
@@ -174,8 +175,16 @@ public class DLPluginManager {
     private String dexOutputPath;
 
     private DexClassLoader createDexClassLoader(String dexPath) {
+
+        // dexOpt目录，不放到sd，而是放到private目录
         File dexOutputDir = mContext.getDir("dex", Context.MODE_PRIVATE);
         dexOutputPath = dexOutputDir.getAbsolutePath();
+
+        // 最后一个参数是parentClassLoader，
+        // 为啥是mContext.getClassLoader呢？这个是什么ClassLoader？还有其它ClassLoader吗？
+        // 走到这里就要研究一下各种ClassLoader。
+        // 1，mContext.getClassLoader是什么？->pathClassLoader
+        // 2，假设使用BootClassLoader会怎么样？->会加载失败!
         DexClassLoader loader = new DexClassLoader(dexPath, dexOutputPath, mNativeLibDir, mContext.getClassLoader());
         return loader;
     }

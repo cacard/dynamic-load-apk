@@ -48,6 +48,12 @@ import com.ryg.utils.DLConstants;
  * 
  * @see {@link DLBasePluginActivity.that}
  * @author renyugang
+ *
+ *
+ * 所有插件Activity的基类，且实现了DLPlugin。
+ * 宿主调起插件Activity时，先用反射创建instance，然后通过接口，调用onCreate()，瞧瞧onCrate()做了什么？
+ *
+ *
  */
 public class DLBasePluginActivity extends Activity implements DLPlugin {
 
@@ -68,6 +74,14 @@ public class DLBasePluginActivity extends Activity implements DLPlugin {
 
     protected int mFrom = DLConstants.FROM_INTERNAL;
 
+    /**
+     * 注入proxy
+     * 这个放到onCrate()上面看来是有道理的哈！
+     * 在反射创建instance后就注入了，相当于setProxy。
+     *
+     * @param proxyActivity
+     * @param pluginPackage
+     */
     @Override
     public void attach(Activity proxyActivity, DLPluginPackage pluginPackage) {
         Log.d(TAG, "attach: proxyActivity= " + proxyActivity);
@@ -78,9 +92,15 @@ public class DLBasePluginActivity extends Activity implements DLPlugin {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        // 宿主调起到这里的时候，bundle是有的，仅有个from是External。
+
+        // 获取mFrom
         if (savedInstanceState != null) {
             mFrom = savedInstanceState.getInt(DLConstants.FROM, DLConstants.FROM_INTERNAL);
         }
+
+        // 如果是独立安装，走“正常逻辑”
         if (mFrom == DLConstants.FROM_INTERNAL) {
             super.onCreate(savedInstanceState);
             mProxyActivity = this;
@@ -90,8 +110,18 @@ public class DLBasePluginActivity extends Activity implements DLPlugin {
         mPluginManager = DLPluginManager.getInstance(that);
         Log.d(TAG, "onCreate: from= "
                 + (mFrom == DLConstants.FROM_INTERNAL ? "DLConstants.FROM_INTERNAL" : "FROM_EXTERNAL"));
+
+        // 接下来呢？要看这个类的各个生命周期函数了！
+        // ------------->
     }
 
+    /**
+     * override这个setContentView
+     *
+     * 如果是宿主调起，使用代理（mProxyActivity，即所谓的that）的setContentView。
+     *
+     * @param view
+     */
     @Override
     public void setContentView(View view) {
         if (mFrom == DLConstants.FROM_INTERNAL) {
@@ -155,6 +185,11 @@ public class DLBasePluginActivity extends Activity implements DLPlugin {
         }
     }
 
+    /**
+     * 资源类也重写了
+     *
+     * @return
+     */
     @Override
     public Resources getResources() {
         if (mFrom == DLConstants.FROM_INTERNAL) {
@@ -252,6 +287,17 @@ public class DLBasePluginActivity extends Activity implements DLPlugin {
         }
     }
 
+    /**
+     * ?
+     *
+     * from == External时候怎么处理的？
+     *
+     * 不用处理？调起插件Activity返回后，就返回宿主了？
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (mFrom == DLConstants.FROM_INTERNAL) {
@@ -362,6 +408,10 @@ public class DLBasePluginActivity extends Activity implements DLPlugin {
     }
 
     /**
+     * 就是DLPluginManager的startPluginActivity，放到这里方便调用。
+     *
+     * 就是说，启动插件的Activity就是要用这个startPlgunActivity()，不然你直接调用宿主的startActivity，哪有插件什么事儿。
+     *
      * @param dlIntent
      * @return may be {@link #START_RESULT_SUCCESS},
      *         {@link #START_RESULT_NO_PKG}, {@link #START_RESULT_NO_CLASS},

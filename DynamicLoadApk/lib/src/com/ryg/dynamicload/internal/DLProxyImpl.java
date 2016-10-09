@@ -69,6 +69,8 @@ public class DLProxyImpl {
     private void initializeActivityInfo() {
         PackageInfo packageInfo = mPluginPackage.packageInfo;
         if ((packageInfo.activities != null) && (packageInfo.activities.length > 0)) {
+
+            // 如果没有传递过来调起那个Activity，就调用默认的？感觉没有必要设置这个默认的吧。
             if (mClass == null) {
                 mClass = packageInfo.activities[0].name;
             }
@@ -128,26 +130,48 @@ public class DLProxyImpl {
         mAssetManager = mPluginPackage.assetManager;
         mResources = mPluginPackage.resources;
 
+        // 就是设置一下默认调起的Activity，还修复了一个Theme Bug
         initializeActivityInfo();
+
+        // Theme相关?
         handleActivityInfo();
+
+        // 重点，调起插件目标Activity
         launchTargetActivity();
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     protected void launchTargetActivity() {
         try {
+
+            // 使用反射创建插件Activity的实例
             Class<?> localClass = getClassLoader().loadClass(mClass);
             Constructor<?> localConstructor = localClass.getConstructor(new Class[] {});
             Object instance = localConstructor.newInstance(new Object[] {});
+
+            // 说明，插件Activity要实现DLPlugin接口
             mPluginActivity = (DLPlugin) instance;
+
+            // 这个attach是干嘛的呢？其实在mProxyActivity里面可以拿到mPluginActivity和mPluginManager了
+            // 统一放到这里处理？
             ((DLAttachable) mProxyActivity).attach(mPluginActivity, mPluginManager);
+
+
             Log.d(TAG, "instance = " + instance);
+
+
+            // 将代理（mProxyActivity）和相关信息（mPluginPackage）注入到插件Activity
+            // 相当于核心概念（那两篇文章）中的setProxy函数。
             // attach the proxy activity and plugin package to the mPluginActivity
             mPluginActivity.attach(mProxyActivity, mPluginPackage);
 
             Bundle bundle = new Bundle();
             bundle.putInt(DLConstants.FROM, DLConstants.FROM_EXTERNAL);
+
+            // 通过接口调用onCreate，而不是反射。
+            // 接下来去看看插件Activity的onCreate，看有啥特别的地方没。Let's Go.
             mPluginActivity.onCreate(bundle);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
